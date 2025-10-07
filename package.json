@@ -5,9 +5,10 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "test": "jest",
-    "test:fuzzing": "jest tests/fuzzing",
-    "test:watch": "jest --watch"
+    "test": "NODE_ENV=test jest",
+    "test:fuzzing": "NODE_ENV=test jest tests/fuzzing",
+    "test:fuzzing:simple": "node scripts/run-simple-fuzzing-tests.js",
+    "test:watch": "NODE_ENV=test jest --watch"
   },
   "keywords": ["fuzzing", "api", "testing"],
   "author": "",
@@ -30,6 +31,9 @@
     "testMatch": ["**/tests/**/*.test.js"],
     "collectCoverage": true,
     "coverageDirectory": "coverage",
-    "coverageReporters": ["text", "lcov", "html"]
+    "coverageReporters": ["text", "lcov", "html"],
+    "forceExit": true,
+    "detectOpenHandles": true,
+    "testTimeout": 30000
   }
 }

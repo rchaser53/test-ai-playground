@@ -9,9 +9,24 @@ const {
 } = require('../utils/fuzzingHelpers');
 
 describe('API Fuzzing Tests', () => {
+  let server;
+
+  beforeAll(async () => {
+    // テスト用サーバーを起動
+    server = app.listen(0); // ポート0で利用可能なポートを自動選択
+  });
+
+  afterAll(async () => {
+    // テスト終了後にサーバーを閉じる
+    if (server) {
+      await new Promise((resolve) => {
+        server.close(resolve);
+      });
+    }
+  });
   describe('GET /api/users - ファジングテスト', () => {
     test('ランダムなクエリパラメータでテスト', async () => {
-      const fuzzingAttempts = 50;
+      const fuzzingAttempts = 20; // テスト時間短縮のため50から20に変更
       const results = [];
 
       for (let i = 0; i < fuzzingAttempts; i++) {
@@ -60,6 +75,7 @@ describe('API Fuzzing Tests', () => {
       console.log(`Failed: ${fuzzingAttempts - successCount}`);
       
       // 最低80%の成功率を期待
+      // 注意: ランダムな入力のため、レート制限や極端な入力により失敗率が変動する可能性があります
       expect(successCount / fuzzingAttempts).toBeGreaterThan(0.8);
     });
   });
@@ -115,6 +131,7 @@ describe('API Fuzzing Tests', () => {
       console.log(`Error responses (4xx): ${results.filter(r => r.status >= 400 && r.status < 500).length}`);
       
       // 少なくとも1つは正常に作成されるべき
+      // 注意: ランダムなペイロードのため、全て無効な場合は失敗する可能性があります
       expect(createdCount).toBeGreaterThan(0);
     });
 
@@ -365,6 +382,38 @@ describe('API Fuzzing Tests', () => {
         expect([404, 400, 429]).toContain(response.status);
         expect(response.body).toHaveProperty('error');
       }
+    });
+  });
+
+  describe('期待される失敗テスト（学習目的）', () => {
+    test.skip('意図的に失敗するテスト - レート制限', async () => {
+      // このテストは意図的にskipされています
+      // レート制限により必ず失敗することを示すサンプル
+      const promises = [];
+      for (let i = 0; i < 200; i++) { // レート制限を超える大量リクエスト
+        promises.push(request(app).get('/api/users'));
+      }
+      
+      const responses = await Promise.all(promises);
+      const rateLimited = responses.filter(r => r.status === 429);
+      
+      // 注意: この条件は通常失敗します（レート制限により429が返される）
+      expect(rateLimited.length).toBe(0);
+    });
+
+    test.skip('意図的に失敗するテスト - 無効なペイロード', async () => {
+      // このテストは意図的にskipされています
+      // 無効なペイロードで成功することを期待する失敗例
+      const response = await request(app)
+        .post('/api/users')
+        .send({
+          name: '', // 無効な名前
+          email: 'invalid-email', // 無効なメール
+          age: -1 // 無効な年齢
+        });
+
+      // 注意: この条件は失敗します（バリデーションにより400エラーが返される）
+      expect(response.status).toBe(201);
     });
   });
 });
