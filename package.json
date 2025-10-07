@@ -1,0 +1,35 @@
+{
+  "name": "test-ai-playground",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "jest",
+    "test:fuzzing": "jest tests/fuzzing",
+    "test:watch": "jest --watch"
+  },
+  "keywords": ["fuzzing", "api", "testing"],
+  "author": "",
+  "license": "ISC",
+  "description": "API Fuzzing Test Sample",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "express-rate-limit": "^6.7.0"
+  },
+  "devDependencies": {
+    "jest": "^29.5.0",
+    "supertest": "^6.3.3",
+    "@faker-js/faker": "^8.0.2",
+    "nodemon": "^3.0.1"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": ["**/tests/**/*.test.js"],
+    "collectCoverage": true,
+    "coverageDirectory": "coverage",
+    "coverageReporters": ["text", "lcov", "html"]
+  }
+}
