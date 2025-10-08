@@ -220,6 +220,150 @@ function generateRandomHeaders() {
 }
 
 /**
+ * プロパティテスト用のジェネレーター関数群
+ */
+const PropertyTestGenerators = {
+  /**
+   * 有効なユーザーオブジェクトを生成
+   */
+  validUser: () => ({
+    name: faker.person.fullName(),
+    email: faker.internet.email(),
+    age: faker.number.int({ min: 1, max: 120 })
+  }),
+
+  /**
+   * 有効な投稿オブジェクトを生成
+   */
+  validPost: () => ({
+    title: faker.lorem.sentence(),
+    content: faker.lorem.paragraphs(),
+    userId: faker.number.int({ min: 1, max: 1000 })
+  }),
+
+  /**
+   * 境界値のテストケースを生成
+   */
+  boundaryValues: {
+    strings: () => [
+      '', // 空文字列
+      'a', // 最小長
+      'a'.repeat(255), // 標準的な最大長
+      'a'.repeat(1000), // 長い文字列
+      'a'.repeat(10000) // 非常に長い文字列
+    ],
+    numbers: () => [
+      0,
+      1,
+      -1,
+      Number.MAX_SAFE_INTEGER,
+      Number.MIN_SAFE_INTEGER,
+      Number.POSITIVE_INFINITY,
+      Number.NEGATIVE_INFINITY,
+      NaN
+    ],
+    arrays: () => [
+      [],
+      [1],
+      Array(100).fill(0),
+      Array(1000).fill('test')
+    ]
+  },
+
+  /**
+   * 不変条件をテストするためのペアを生成
+   */
+  invariantPairs: () => {
+    const user1 = PropertyTestGenerators.validUser();
+    const user2 = { ...user1, name: user1.name + '_modified' };
+    return { original: user1, modified: user2 };
+  }
+};
+
+/**
+ * プロパティテスト実行ヘルパー
+ */
+function runPropertyTest(generator, property, iterations = 100) {
+  const results = [];
+  
+  for (let i = 0; i < iterations; i++) {
+    try {
+      const input = generator();
+      const result = property(input);
+      results.push({ input, result, success: true });
+    } catch (error) {
+      results.push({ input: generator(), error: error.message, success: false });
+    }
+  }
+  
+  return {
+    totalRuns: iterations,
+    successes: results.filter(r => r.success).length,
+    failures: results.filter(r => !r.success).length,
+    successRate: results.filter(r => r.success).length / iterations,
+    results
+  };
+}
+
+/**
+ * 共通のプロパティ（性質）定義
+ */
+const CommonProperties = {
+  /**
+   * APIレスポンスが適切な形式であることを検証
+   */
+  validApiResponse: (response) => {
+    return response &&
+           typeof response.status === 'number' &&
+           response.status >= 100 && response.status < 600 &&
+           response.body !== undefined;
+  },
+
+  /**
+   * ユーザーオブジェクトが有効な構造を持つことを検証
+   */
+  validUserStructure: (user) => {
+    return user &&
+           typeof user.name === 'string' &&
+           user.name.length > 0 &&
+           typeof user.email === 'string' &&
+           user.email.includes('@') &&
+           (user.age === undefined || (typeof user.age === 'number' && user.age >= 0));
+  },
+
+  /**
+   * 投稿オブジェクトが有効な構造を持つことを検証
+   */
+  validPostStructure: (post) => {
+    return post &&
+           typeof post.title === 'string' &&
+           post.title.length > 0 &&
+           typeof post.content === 'string' &&
+           post.content.length > 0 &&
+           typeof post.userId === 'number' &&
+           post.userId > 0;
+  },
+
+  /**
+   * べき等性の検証（同じ操作を複数回実行しても結果が変わらない）
+   */
+  idempotent: (operation, input) => {
+    const result1 = operation(input);
+    const result2 = operation(input);
+    return JSON.stringify(result1) === JSON.stringify(result2);
+  },
+
+  /**
+   * 可換性の検証（操作の順序を変えても結果が同じ）
+   */
+  commutative: (operation, input1, input2) => {
+    const result1 = operation(operation({}, input1), input2);
+    const result2 = operation(operation({}, input2), input1);
+    return JSON.stringify(result1) === JSON.stringify(result2);
+  }
+};
+
+/**
  * ファジングテスト用のペイロードを生成
  */
 function generateFuzzingPayloads(basePayload = {}) {
@@ -277,5 +421,8 @@ module.exports = {
   generateRandomEmail,
   generateRandomObject,
   generateRandomHeaders,
-  generateFuzzingPayloads
+  generateFuzzingPayloads,
+  PropertyTestGenerators,
+  runPropertyTest,
+  CommonProperties
 };

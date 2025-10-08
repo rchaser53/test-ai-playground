@@ -8,6 +8,7 @@
     "test": "NODE_ENV=test jest",
     "test:fuzzing": "NODE_ENV=test jest tests/fuzzing",
     "test:fuzzing:simple": "node scripts/run-simple-fuzzing-tests.js",
+    "test:property": "NODE_ENV=test jest tests/fuzzing/property-based-fuzzing.test.js",
     "test:watch": "NODE_ENV=test jest --watch"
   },
   "keywords": ["fuzzing", "api", "testing"],

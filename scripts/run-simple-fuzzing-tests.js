@@ -11,7 +11,8 @@ const path = require('path');
 const testFiles = [
   'tests/fuzzing/api-fuzzing.test.js',
   'tests/fuzzing/performance-fuzzing.test.js',
-  'tests/fuzzing/security-fuzzing.test.js'
+  'tests/fuzzing/security-fuzzing.test.js',
+  'tests/fuzzing/property-based-fuzzing.test.js'
 ];
 
 async function runTest(testFile) {

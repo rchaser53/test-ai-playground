@@ -29,6 +29,14 @@
 - レート制限テスト
 - 大容量データ処理テスト
 
+### プロパティベーステスト項目
+- べき等性の検証（同じ操作を複数回実行しても結果が同じ）
+- 不変条件の検証（データの整合性が保たれる）
+- 境界値での堅牢性テスト
+- 例外安全性の検証（不正入力でもシステムが安定）
+- データ整合性の検証（作成したデータが取得可能）
+- パフォーマンス特性の検証（レスポンス時間の妥当性）
+
 ## 📦 セットアップ
 
 ### 前提条件
@@ -74,6 +82,13 @@ npm test tests/fuzzing/security-fuzzing.test.js
 #### パフォーマンスファジングテスト
 ```bash
 npm test tests/fuzzing/performance-fuzzing.test.js
+```
+
+#### プロパティベースファジングテスト
+```bash
+npm run test:property
+# または
+npm test tests/fuzzing/property-based-fuzzing.test.js
 ```
 
 ### 包括的なファジングテスト実行
